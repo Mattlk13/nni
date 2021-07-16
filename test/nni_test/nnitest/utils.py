@@ -9,7 +9,7 @@ import sys
 import subprocess
 import requests
 import time
-import ruamel.yaml as yaml
+import yaml
 import shlex
 
 EXPERIMENT_DONE_SIGNAL = 'Experiment done'
@@ -43,12 +43,12 @@ def remove_files(file_list):
 def get_yml_content(file_path):
     '''Load yaml file content'''
     with open(file_path, 'r') as file:
-        return yaml.load(file, Loader=yaml.Loader)
+        return yaml.safe_load(file)
 
 def dump_yml_content(file_path, content):
     '''Dump yaml file content'''
     with open(file_path, 'w') as file:
-        file.write(yaml.dump(content, default_flow_style=False))
+        file.write(yaml.safe_dump(content, default_flow_style=False))
 
 def setup_experiment(installed=True):
     '''setup the experiment if nni is not installed'''
@@ -124,7 +124,7 @@ def print_file_content(filepath):
 def print_trial_job_log(training_service, trial_jobs_url):
     trial_jobs = get_trial_jobs(trial_jobs_url)
     for trial_job in trial_jobs:
-        trial_log_dir = os.path.join(get_experiment_dir(EXPERIMENT_URL), 'trials', trial_job['id'])
+        trial_log_dir = os.path.join(get_experiment_dir(EXPERIMENT_URL), 'trials', trial_job['trialJobId'])
         log_files = ['stderr', 'trial.log'] if training_service == 'local' else ['stdout_log_collection.log']
         for log_file in log_files:
             print_file_content(os.path.join(trial_log_dir, log_file))

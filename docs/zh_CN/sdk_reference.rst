@@ -7,6 +7,5 @@ Python API 参考
     :maxdepth: 1
 
     自动调优 <autotune_ref>
-    NAS <NAS/NasReference>
-    模型压缩 <Compressor/CompressionReference>
-    NNI 客户端 <nnicli_ref>
+    NAS <NAS/ApiReference>
+    模型压缩 <Compression/CompressionReference>

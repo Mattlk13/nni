@@ -34,20 +34,45 @@ testCases:
   # check status of experiment before calling validator
   experimentStatusCheck: True
 
+- name: shared-storage-remote-azureblob
+  configFile: test/config/sharedstorage_test/config_sharedstorage_remote_azureblob.yml
+  config:
+    sharedStorage:
+      localMountPoint: /tmp/nnimount/testlocalrootpath
+      remoteMountPoint: /tmp/nnimount/testremoterootpath
+      storageAccountName: nennistorage
+      storageAccountKey: $(azureblob_token_test)
+      containerName: sharedstorage
+  trainingService: remote
+  validator:
+    class: FileExistValidator
+    kwargs:
+      rootpath: /tmp/nnimount/testlocalrootpath
+
+# TODO: Enable this case after nfs server is ready
+#- name: shared-storage-remote-nfs
+#  configFile: test/config/sharedstorage_test/config_sharedstorage_remote_nfs.yml
+#  config:
+#    sharedStorage:
+#      localMountPoint: /tmp/nnimount/testlocalrootpath
+#      remoteMountPoint: /tmp/nnimount/testremoterootpath
+#      nfsServer: $(NFS_IP)
+#      exportedDirectory: /home/nni/mnt/
+#  validator:
+#    class: FileExistValidator
+#    kwargs:
+#      rootpath: /tmp/nnimount/testlocalrootpath
+
 - name: sklearn-regression
   configFile: test/config/examples/sklearn-regression.yml
 
-- name: mnist-tfv1
-  configFile: test/config/examples/mnist-tfv1.yml
+- name: mnist-tensorflow
+  configFile: test/config/examples/mnist-tfv2.yml
   config:
+    maxExecDuration: 10m # This example will use longger time in remote mode, set max_duration to 10m to avoid timeout error.
     maxTrialNum: 1
     trialConcurrency: 1
-
-- name: mnist-keras
-  configFile: test/config/examples/mnist-keras.yml
-  config:
-    maxTrialNum: 2
-    trialConcurrency: 1
+  trainingService: local remote # FIXME: timeout on pai, looks like tensorflow failed to link CUDA
 
 - name: mnist-pytorch-local
   configFile: test/config/examples/mnist-pytorch.yml
@@ -61,11 +86,12 @@ testCases:
   launchCommand: nnictl create --config $configFile --debug
   trainingService: remote pai kubeflow frameworkcontroller dlts
 
-- name: mnist-annotation
-  configFile: test/config/examples/mnist-annotation.yml
-  config:
-    maxTrialNum: 1
-    trialConcurrency: 1
+# TODO: move this and following commented test cases to pytorch or tf2
+#- name: mnist-annotation
+#  configFile: test/config/examples/mnist-annotation.yml
+#  config:
+#    maxTrialNum: 1
+#    trialConcurrency: 1
 
 - name: cifar10-pytorch
   configFile: test/config/examples/cifar10-pytorch.yml
@@ -79,12 +105,16 @@ testCases:
       command: python3 main.py --epochs 1 --batches 1
       gpuNum: 0
 
-- name: nested-ss
-  configFile: test/config/examples/mnist-nested-search-space.yml
+- name: cifar10-pytorch-adl
+  configFile: test/config/examples/cifar10-pytorch-adl.yml
+  trainingService: adl
+
+#- name: nested-ss
+#  configFile: test/config/examples/mnist-nested-search-space.yml
 
 - name: classic-nas-gen-ss
   configFile: test/config/examples/classic-nas-pytorch.yml
-  launchCommand: nnictl ss_gen --trial_command="python3 mnist.py --epochs 1" --trial_dir=../examples/nas/classic_nas --file=config/examples/nni-nas-search-space.json
+  launchCommand: nnictl ss_gen --trial_command="python3 mnist.py --epochs 1" --trial_dir=../examples/nas/legacy/classic_nas --file=config/examples/nni-nas-search-space.json
   stopCommand:
   experimentStatusCheck: False
   trainingService: local
@@ -142,17 +172,6 @@ testCases:
     kwargs:
       import_data_file_path: config/nnictl_experiment/test_import.json
 
-- name: nnicli
-  configFile: test/config/examples/sklearn-regression.yml
-  config:
-    maxTrialNum: 4
-    trialConcurrency: 4
-  launchCommand: python3 -c 'from nnicli import Experiment; exp = Experiment(); exp.start_experiment("$configFile")'
-  stopCommand: python3 -c 'from nnicli import Experiment; exp = Experiment(); exp.connect_experiment("http://localhost:8080/"); exp.stop_experiment()'
-  validator:
-    class: NnicliValidator
-  platform: linux darwin
-
 - name: foreground
   configFile: test/config/examples/sklearn-regression.yml
   launchCommand: python3 nni_test/nnitest/foreground.py --config $configFile --timeout 45
@@ -181,27 +200,6 @@ testCases:
 - name: multi-thread
   configFile: test/config/multi_thread/config.yml
 
-- name: multi-phase-batch
-  configFile: test/config/multi_phase/batch.yml
-  config:
-    # for batch tuner, maxTrialNum can not exceed length of search space
-    maxTrialNum: 2
-    trialConcurrency: 2
-
-- name: multi-phase-evolution
-  configFile: test/config/multi_phase/evolution.yml
-
-- name: multi-phase-grid
-  configFile: test/config/multi_phase/grid.yml
-  config:
-    maxTrialNum: 2
-    trialConcurrency: 2
-
-- name: multi-phase-metis
-  configFile: test/config/multi_phase/metis.yml
-
-- name: multi-phase-tpe
-  configFile: test/config/multi_phase/tpe.yml
 
 #########################################################################
 # nni assessor test
@@ -215,40 +213,40 @@ testCases:
 #########################################################################
 # nni tuners test
 #########################################################################
-- name: tuner-annel
-  configFile: test/config/tuners/anneal.yml
+#- name: tuner-annel
+#  configFile: test/config/tuners/anneal.yml
 
-- name: tuner-evolution
-  configFile: test/config/tuners/evolution.yml
+#- name: tuner-evolution
+#  configFile: test/config/tuners/evolution.yml
 
-- name: tuner-random
-  configFile: test/config/tuners/random.yml
+#- name: tuner-random
+#  configFile: test/config/tuners/random.yml
 
-- name: tuner-smac
-  configFile: test/config/tuners/smac.yml
-  platform: linux darwin
+#- name: tuner-smac
+#  configFile: test/config/tuners/smac.yml
+#  platform: linux darwin
 
-- name: tuner-tpe
-  configFile: test/config/tuners/tpe.yml
+#- name: tuner-tpe
+#  configFile: test/config/tuners/tpe.yml
 
-- name: tuner-batch
-  configFile: test/config/tuners/batch.yml
+#- name: tuner-batch
+#  configFile: test/config/tuners/batch.yml
 
-- name: tuner-bohb
-  configFile: test/config/tuners/bohb.yml
-  platform: linux darwin
+#- name: tuner-bohb
+#  configFile: test/config/tuners/bohb.yml
+#  platform: linux darwin
 
-- name: tuner-gp
-  configFile: test/config/tuners/gp.yml
+#- name: tuner-gp
+#  configFile: test/config/tuners/gp.yml
 
-- name: tuner-grid
-  configFile: test/config/tuners/gridsearch.yml
+#- name: tuner-grid
+#  configFile: test/config/tuners/gridsearch.yml
 
-- name: tuner-hyperband
-  configFile: test/config/tuners/hyperband.yml
+#- name: tuner-hyperband
+#  configFile: test/config/tuners/hyperband.yml
 
-- name: tuner-metis
-  configFile: test/config/tuners/metis.yml
+#- name: tuner-metis
+#  configFile: test/config/tuners/metis.yml
 
 - name: tuner-regularized_evolution
   configFile: test/config/tuners/regularized_evolution_tuner.yml
@@ -258,4 +256,3 @@ testCases:
 #########################################################################
 - name: customized-tuners-demotuner
   configFile: test/config/customized_tuners/demotuner-sklearn-classification.yml
-
