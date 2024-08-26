@@ -14,7 +14,7 @@
     "app-module-path": "^2.2.0",
     "azure-storage": "^2.10.4",
     "child-process-promise": "^2.2.1",
-    "express": "^4.17.1",
+    "express": "^4.19.2",
     "express-joi-validator": "^2.0.1",
     "http-proxy": "^1.18.1",
     "ignore": "^5.1.8",
@@ -23,16 +23,16 @@
     "lockfile": "^1.0.4",
     "python-shell": "^3.0.0",
     "rx": "^4.1.0",
-    "sqlite3": "5.0.2",
+    "sqlite3": "5.1.5",
     "ssh2": "^1.4.0",
     "stream-buffers": "^3.0.2",
     "tail-stream": "^0.3.4",
-    "tar": "^6.1.9",
+    "tar": "^6.2.1",
     "tree-kill": "^1.2.2",
     "ts-deferred": "^1.0.4",
     "typescript-ioc": "^1.2.6",
     "typescript-string-operations": "^1.4.1",
-    "ws": "^7.4.6"
+    "ws": "^7.5.10"
   },
   "devDependencies": {
     "@types/chai": "^4.2.18",
